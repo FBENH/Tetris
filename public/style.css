@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
+
+/* General */
+html, body, button{
+    overflow: hidden;  
+    font-family: "Pixelify Sans", sans-serif;
+
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    place-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #000;
+    color: aliceblue;
+    align-items: center;
+    background-image: url(images/wallpaperflare.com_wallpaper.jpg);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.title {
+  font-family: "Pixelify Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: bold;
+  font-style: normal;
+  font-size: 3rem;
+}
+.letter {
+    display: inline-block;
+  }
+  
+  .letter:nth-child(1) { color: red; }
+  .letter:nth-child(2) { color: orange; }
+  .letter:nth-child(3) { color: yellow; }
+  .letter:nth-child(4) { color: green; }
+  .letter:nth-child(5) { color: blue; }
+
+#myVideo {
+    display: none;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+}
+
+canvas {
+    display: inline;
+}
+
+/* Layout */
+.game-view {
+    display: none;
+    grid-template-columns: auto auto auto;
+    gap: 3rem;
+}
+
+#canvas {
+    border: 10px double black;
+    border-radius: 20px;
+}
+
+#piece-bag, #saved-piece {
+    border-radius: 10px;
+    border: 10px double black;
+}
+
+/* Menu */
+.menu {
+    background-color: #000;
+    border: 4px solid #282828;
+    border-radius: 20px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.menuButton {
+    color: #000;
+    font-weight: bold;
+    border: none;
+    display: block;
+    padding: 1rem;
+    margin: 1rem;
+    min-width: 10rem;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.control-key {
+    font-weight: bold;
+    font-size: 1.25rem;
+    font-family: 'Courier New', Courier, monospace;    
+}
+
+.play {
+    color: #fff;
+    background-color: rgb(19, 155, 19);
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.play:hover {
+    background-color: rgb(24, 190, 24);
+}
+
+/* Table */
+table {
+    background-color: black;
+    text-align: center;
+    min-width: 100%;
+    border-radius: 20px;
+}
+
+thead th {
+    background-color: #000000;
+}
+
+tr {
+    width: 80vw;
+    background-color: #282828;
+}
+
+tr:nth-child(even) {
+    background-color: #000000;
+}
+
+ul {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+    padding: 0.5rem;
+    text-align: center;
+    border: #fff;
+    font-weight: bold;
+}
+
+.confirmContainer {    
+    column-span: 2;    
+    text-align: center;
+}
+.confirmContainer button {    
+    display: inline;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;    
+    width: 100%;    
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #000;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.modal-content div {
+    text-align: left;
+    padding: 20px;
+    line-height: 2;
+}
+
+.modal-content h2 {
+    padding: 20px;
+}
+
+/* Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: crimson;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Wrapper */
+#wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/*  Animations */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+  }
+  
+.shake {
+animation: shake 0.5s ease-in-out;
+}
+
+.fade-text {
+position: fixed;
+bottom: 30vh; /* Adjust as needed */
+left: 30vw; /* Adjust as needed */
+padding: 10px;
+background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+color: white;
+border-radius: 5px;
+opacity: 0; /* Start hidden */
+transition: opacity 1s ease-in-out; /* Smooth fade effect */
+}

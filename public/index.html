@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>    
+    
+
+    <h1 class="title">
+        <span class="letter">T </span>
+        <span class="letter">E </span>
+        <span class="letter">T </span>
+        <span class="letter">R </span>
+        <span class="letter">I </span>
+        <span class="letter">S </span>        
+    </h1>    
+
+    <span class="fade-text" id="fadeText"></span>
+    <div id="controlsDialog" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p></p>
+          
+        </div>      
+    </div>
+      
+    <div class="menu" id="menu">
+        <button id="play" class="play menuButton">PLAY</button>
+        <button id="controls" class="menuButton">CONTROLS</button>
+        <button id="configuration" class="menuButton">CONFIGURATION</button>
+        <table id="scoreTable">
+            <thead>
+                <tr><th>HIGH SCORES</th></tr>
+            </thead>
+            <tbody id="highscores">
+                <tr>
+                    <td>5000</td>
+                </tr>
+                <tr><td>4000</td></tr>
+                <tr><td>3000</td></tr>
+                <tr><td>2000</td></tr>
+                <tr><td>1000</td></tr>
+            </tbody>
+        </table>
+
+        
+    </div>   
+    <div class="game-view" id="game-view">
+        <div class="game-info">
+            <p>HOLD</p>
+            <canvas id="saved-piece"></canvas>
+            <p id="level"></p>
+            <p id="lines"></p>
+            <p id="score"></p>
+        </div>
+        <div class="game-canvas">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="next-piece">
+            <p>NEXT</p>
+            <canvas id="piece-bag"></canvas>
+        </div>       
+    </div>    
+    <audio id="moveSound" src="sounds\move.mp3"></audio>
+    <audio id="rotateSound" src="sounds/rotate.mp3"></audio>
+    <audio id="clearSound" src="sounds/bonus-points-190035.mp3"></audio>
+    <audio id="dropSound" src="sounds/drop.mp3"></audio>
+    <audio id="soundTrack" src="sounds/Soundtrack.mp3" loop></audio>
+    <audio id="gameOver" src="sounds/game-over.mp3"></audio>
+    <video src="videos/lights.mp4" loop autoplay preload muted id="myVideo"></video>
+    <script src="constants.js" type="module"></script> 
+    <script type="module" src="sounds.js"></script>   
+    <script type="module" src="video.js"></script>
+    <script src="script.js" type="module"></script>
+    <script language="Javascript">
+        window.onload=function(){
+        var mobile = (/iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase()));
+        if (mobile) {
+            alert("This game isn't compatible with mobile devices. Please play on a computer.");              
+        }
+      }
+    </script> 
+</body>
+</html>

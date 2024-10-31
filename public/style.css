@@ -86,10 +86,11 @@ canvas {
     border: none;
     display: block;
     padding: 1rem;
-    margin: 1rem;
+    margin: 1rem 10%;
     min-width: 10rem;
     border-radius: 20px;
     cursor: pointer;
+    width: 80%;
 }
 
 .control-key {

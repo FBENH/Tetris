@@ -1,10 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
-
 /* General */
-html, body, button{
-    overflow: hidden;  
-    font-family: "Pixelify Sans", sans-serif;
+[hidden] {
+    display: none !important;
+}
 
+html, body, button {
+    overflow: hidden;
+    font-family: "Pixelify Sans", sans-serif;
 }
 
 body {
@@ -17,7 +18,7 @@ body {
     background-color: #000;
     color: aliceblue;
     align-items: center;
-    background-image: url(images/wallpaperflare.com_wallpaper.jpg);
+    background-image: url(/images/wallpaperflare.com_wallpaper.jpg);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -40,7 +41,16 @@ body {
   .letter:nth-child(4) { color: green; }
   .letter:nth-child(5) { color: blue; }
 
-#myVideo {
+body.in-game {
+    background-color: #282828;
+    background-image: none;
+}
+
+body.in-game .title {
+    display: none;
+}
+
+#background-video {
     display: none;
     position: fixed;
     right: 0;
@@ -50,23 +60,28 @@ body {
     z-index: -1;
 }
 
+body.in-game #background-video {
+    display: block;
+}
+
 canvas {
-    display: inline;
+    display: block;
+    margin: 0 auto;
 }
 
 /* Layout */
 .game-view {
-    display: none;
+    display: grid;
     grid-template-columns: auto auto auto;
     gap: 3rem;
 }
 
-#canvas {
+#board-canvas {
     border: 10px double black;
     border-radius: 20px;
 }
 
-#piece-bag, #saved-piece {
+#next-canvas, #hold-canvas {
     border-radius: 10px;
     border: 10px double black;
 }
@@ -81,6 +96,7 @@ canvas {
 }
 
 .menuButton {
+    box-sizing: border-box;
     color: #000;
     font-weight: bold;
     border: none;
@@ -149,31 +165,33 @@ li {
     column-span: 2;    
     text-align: center;
 }
-.confirmContainer button {    
-    display: inline;
+.confirmContainer button {
+    display: inline-block;
+    width: auto;
+    margin: 1rem 0.5rem 0;
 }
 
 /* Modal */
 .modal {
-    display: none;
     position: fixed;
     z-index: 1;
-    left: 0;    
-    width: 100%;    
+    inset: 0;
     overflow: hidden;
     background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
     background-color: #000;
-    margin: 15% auto;
+    margin: 15vh auto 0;
     padding: 20px;
     border: 1px solid #888;
     width: fit-content;
     white-space: nowrap;
 }
 
-.modal-content div {
+.modal-content section > div,
+.modal-content section > table,
+.modal-content form {
     text-align: left;
     padding: 20px;
     line-height: 2;
@@ -185,6 +203,10 @@ li {
 
 /* Close Button */
 .close {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -226,7 +248,22 @@ left: 30vw; /* Adjust as needed */
 padding: 10px;
 background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
 color: white;
+white-space: pre-line;
+pointer-events: none;
 border-radius: 5px;
 opacity: 0; /* Start hidden */
 transition: opacity 1s ease-in-out; /* Smooth fade effect */
+}
+
+/* Only shown on touch-only devices */
+.touch-note {
+    display: none;
+    padding: 0 1rem;
+    color: #aaa;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .touch-note {
+        display: block;
+    }
 }

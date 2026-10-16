@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap">
+</head>
+<body>
+    <h1 class="title" aria-label="Tetris">
+        <span class="letter">T </span>
+        <span class="letter">E </span>
+        <span class="letter">T </span>
+        <span class="letter">R </span>
+        <span class="letter">I </span>
+        <span class="letter">S </span>
+    </h1>
+
+    <span class="fade-text" id="fade-text" aria-live="polite"></span>
+
+    <div id="modal" class="modal" hidden>
+        <div class="modal-content" role="dialog" aria-modal="true">
+            <button type="button" class="close" id="modal-close" aria-label="Close">&times;</button>
+
+            <section data-panel="controls" hidden>
+                <table>
+                    <tbody>
+                        <tr><td>MOVE LEFT</td><td><span class="control-key">←</span></td></tr>
+                        <tr><td>MOVE RIGHT</td><td><span class="control-key">→</span></td></tr>
+                        <tr><td>ROTATE RIGHT</td><td><span class="control-key">↑</span> / <span class="control-key">X</span></td></tr>
+                        <tr><td>ROTATE LEFT</td><td><span class="control-key">Z</span></td></tr>
+                        <tr><td>SOFT DROP</td><td><span class="control-key">↓</span></td></tr>
+                        <tr><td>HARD DROP</td><td><span class="control-key">Space</span></td></tr>
+                        <tr><td>HOLD PIECE</td><td><span class="control-key">C</span> / <span class="control-key">Shift</span></td></tr>
+                        <tr><td>PAUSE</td><td><span class="control-key">Esc</span> / <span class="control-key">P</span></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-panel="config" hidden>
+                <form id="config-form">
+                    <table>
+                        <tbody>
+                            <tr><td><label for="cfg-background">BACKGROUND COLOR</label></td><td><input type="color" id="cfg-background" name="background"></td></tr>
+                            <tr><td><label for="cfg-grid">GRID COLOR</label></td><td><input type="color" id="cfg-grid" name="grid"></td></tr>
+                            <tr><td><label for="cfg-border">BORDER COLOR</label></td><td><input type="color" id="cfg-border" name="border"></td></tr>
+                            <tr><td><label for="cfg-music">MUSIC VOLUME</label></td><td><input type="range" id="cfg-music" name="musicVolume" min="0" max="1" step="0.1"></td></tr>
+                            <tr><td><label for="cfg-sfx">SFX VOLUME</label></td><td><input type="range" id="cfg-sfx" name="sfxVolume" min="0" max="1" step="0.1"></td></tr>
+                            <tr>
+                                <td colspan="2" class="confirmContainer">
+                                    <button type="button" id="cfg-reset" class="menuButton">RESET</button>
+                                    <button type="submit" class="menuButton play">SAVE</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </section>
+
+            <section data-panel="pause" hidden>
+                <h2>Paused</h2>
+                <div id="wrapper">
+                    <button type="button" class="menuButton play" id="resume">RESUME</button>
+                    <button type="button" class="menuButton" id="restart">RESTART</button>
+                    <button type="button" class="menuButton" id="quit">QUIT</button>
+                </div>
+            </section>
+
+            <section data-panel="gameover" hidden>
+                <h2 id="gameover-title">Game Over</h2>
+                <p id="gameover-score"></p>
+            </section>
+        </div>
+    </div>
+
+    <div class="menu" id="menu">
+        <button type="button" id="play" class="play menuButton">PLAY</button>
+        <button type="button" id="controls" class="menuButton">CONTROLS</button>
+        <button type="button" id="configuration" class="menuButton">CONFIGURATION</button>
+        <table id="score-table">
+            <thead>
+                <tr><th>HIGH SCORES</th></tr>
+            </thead>
+            <tbody id="highscores"></tbody>
+        </table>
+        <p class="touch-note">This game needs a keyboard.</p>
+    </div>
+
+    <div class="game-view" id="game-view" hidden>
+        <div class="game-info">
+            <p>HOLD</p>
+            <canvas id="hold-canvas"></canvas>
+            <p id="level"></p>
+            <p id="lines"></p>
+            <p id="score"></p>
+        </div>
+        <div class="game-canvas">
+            <canvas id="board-canvas"></canvas>
+        </div>
+        <div class="next-piece">
+            <p>NEXT</p>
+            <canvas id="next-canvas"></canvas>
+        </div>
+    </div>
+
+    <video src="/videos/lights.mp4" loop muted playsinline preload="none" id="background-video"></video>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

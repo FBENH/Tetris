@@ -19,26 +19,32 @@ function surface(canvas: HTMLCanvasElement, width: number, height: number): Surf
 }
 
 // Draws in "block" units: 1 unit = one cell of the board.
+export interface RendererOptions {
+  board: HTMLCanvasElement;
+  hold?: HTMLCanvasElement;
+  next?: HTMLCanvasElement;
+  colors: Settings;
+  boardWidth: number;
+  boardHeight: number;
+  // How many blocks fit in the window height; sets the block size.
+  blocksPerScreen?: number;
+}
+
 export class Renderer {
   private readonly board: Surface;
-  private readonly hold: Surface;
-  private readonly next: Surface;
+  private readonly hold: Surface | null;
+  private readonly next: Surface | null;
+  private readonly blocksPerScreen: number;
   private readonly gridLayer = document.createElement("canvas");
   private colors: Settings;
   private sidePanelsKey = "";
 
-  constructor(
-    boardCanvas: HTMLCanvasElement,
-    holdCanvas: HTMLCanvasElement,
-    nextCanvas: HTMLCanvasElement,
-    colors: Settings,
-    boardWidth: number,
-    boardHeight: number,
-  ) {
-    this.board = surface(boardCanvas, boardWidth, boardHeight);
-    this.hold = surface(holdCanvas, SIDE_WIDTH, SIDE_WIDTH);
-    this.next = surface(nextCanvas, SIDE_WIDTH, NEXT_SLOT_HEIGHT * 3);
-    this.colors = colors;
+  constructor(options: RendererOptions) {
+    this.board = surface(options.board, options.boardWidth, options.boardHeight);
+    this.hold = options.hold ? surface(options.hold, SIDE_WIDTH, SIDE_WIDTH) : null;
+    this.next = options.next ? surface(options.next, SIDE_WIDTH, NEXT_SLOT_HEIGHT * 3) : null;
+    this.colors = options.colors;
+    this.blocksPerScreen = options.blocksPerScreen ?? 30;
     this.resize();
   }
 
@@ -49,9 +55,13 @@ export class Renderer {
 
   // Block size follows the window height, as in the original game.
   resize(): void {
-    const blockSize = Math.max(12, Math.floor(window.innerHeight / 30));
+    let blockSize = Math.floor(window.innerHeight / this.blocksPerScreen);
+    // A board on its own (the menu demo) must also fit narrow screens.
+    if (!this.hold) blockSize = Math.min(blockSize, Math.floor((window.innerWidth - 40) / this.board.width));
+    blockSize = Math.max(12, blockSize);
     const dpr = window.devicePixelRatio || 1;
     for (const s of [this.board, this.hold, this.next]) {
+      if (!s) continue;
       s.canvas.style.width = `${s.width * blockSize}px`;
       s.canvas.style.height = `${s.height * blockSize}px`;
       s.canvas.width = Math.round(s.width * blockSize * dpr);
@@ -120,20 +130,22 @@ export class Renderer {
 
   // The hold and next panels only change when a piece is used, so redraw them only then.
   private drawSidePanels(game: Game): void {
+    const { hold, next: nextPanel } = this;
+    if (!hold || !nextPanel) return;
     const next = game.next;
     const key = `${game.hold}|${game.holdUsed}|${next.join("")}`;
     if (key === this.sidePanelsKey) return;
     this.sidePanelsKey = key;
 
-    this.clearPanel(this.hold);
+    this.clearPanel(hold);
     if (game.hold) {
-      this.hold.ctx.globalAlpha = game.holdUsed ? 0.4 : 1;
-      this.panelPiece(this.hold.ctx, game.hold, SIDE_WIDTH / 2);
-      this.hold.ctx.globalAlpha = 1;
+      hold.ctx.globalAlpha = game.holdUsed ? 0.4 : 1;
+      this.panelPiece(hold.ctx, game.hold, SIDE_WIDTH / 2);
+      hold.ctx.globalAlpha = 1;
     }
 
-    this.clearPanel(this.next);
-    next.forEach((type, i) => this.panelPiece(this.next.ctx, type, NEXT_SLOT_HEIGHT * i + NEXT_SLOT_HEIGHT / 2));
+    this.clearPanel(nextPanel);
+    next.forEach((type, i) => this.panelPiece(nextPanel.ctx, type, NEXT_SLOT_HEIGHT * i + NEXT_SLOT_HEIGHT / 2));
   }
 
   private clearPanel({ ctx, width, height }: Surface): void {

@@ -2,7 +2,10 @@ import "./style.css";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "./core/board";
 import { Game, type GameEvent } from "./core/game";
 import { pauseMusic, playEffect, resumeMusic, setVolumes, startMusic, stopMusic } from "./ui/audio";
-import { Input, type Action } from "./ui/input";
+import { DEFAULT_CONTROLS, cloneControls, loadControls, saveControls, type Action } from "./ui/controls";
+import { ControlsPanel } from "./ui/controlsPanel";
+import { Demo } from "./ui/demo";
+import { Input } from "./ui/input";
 import { Renderer } from "./ui/renderer";
 import {
   DEFAULT_SETTINGS,
@@ -14,13 +17,19 @@ import {
 } from "./ui/settings";
 
 const GAME_OVER_DELAY_MS = 1500;
+const VIDEO_WAIT_MS = 4000; // start anyway if the background video is this slow
+const COUNTDOWN = ["3", "2", "1", "GO!"];
+const COUNTDOWN_STEP_MS = 600;
+const RANKS = ["1ST", "2ND", "3RD", "4TH", "5TH"];
 const MAX_FRAME_MS = 100; // avoid a burst of gravity after a long frame
 const CLEAR_LABELS = ["", "SINGLE!", "DOUBLE!", "TRIPLE!", "TETRIS!"];
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const ui = {
-  menu: $("menu"),
+  startScreen: $("start-screen"),
+  play: $<HTMLButtonElement>("play"),
+  countdown: $("countdown"),
   gameView: $("game-view"),
   modal: $("modal"),
   panels: document.querySelectorAll<HTMLElement>("[data-panel]"),
@@ -39,17 +48,22 @@ let settings = loadSettings();
 const highScores = loadHighScores();
 setVolumes(settings.musicVolume, settings.sfxVolume);
 
-const renderer = new Renderer(
-  $<HTMLCanvasElement>("board-canvas"),
-  $<HTMLCanvasElement>("hold-canvas"),
-  $<HTMLCanvasElement>("next-canvas"),
-  settings,
-  BOARD_WIDTH,
-  BOARD_HEIGHT,
-);
+let controls = loadControls();
+
+const renderer = new Renderer({
+  board: $<HTMLCanvasElement>("board-canvas"),
+  hold: $<HTMLCanvasElement>("hold-canvas"),
+  next: $<HTMLCanvasElement>("next-canvas"),
+  colors: settings,
+  boardWidth: BOARD_WIDTH,
+  boardHeight: BOARD_HEIGHT,
+});
+const demo = new Demo($<HTMLCanvasElement>("demo-canvas"), settings);
 
 let game: Game | null = null;
 let paused = false;
+let starting = false;
+let countdownLeft = 0; // ms of "3, 2, 1, GO!" still to show
 let lastFrame = 0;
 let frameId = 0;
 let hudKey = "";
@@ -63,7 +77,10 @@ function frame(time: number): void {
   const dt = Math.min(time - lastFrame, MAX_FRAME_MS);
   lastFrame = time;
 
-  if (!paused && game.phase !== "over") {
+  if (!paused && countdownLeft > 0) {
+    countdownLeft -= dt;
+    updateCountdown();
+  } else if (!paused && game.phase !== "over") {
     input.update(dt);
     game.update(dt);
   }
@@ -110,7 +127,7 @@ function onAction(action: Action): void {
     else pause();
     return;
   }
-  if (paused) return;
+  if (paused || countdownLeft > 0) return;
 
   switch (action) {
     case "left":
@@ -137,18 +154,26 @@ function onAction(action: Action): void {
   }
 }
 
-const input = new Input(onAction);
+const input = new Input(controls, onAction);
 
 // ---------------------------------------------------------------------------
 // Screens
 
-function start(): void {
+async function start(): Promise<void> {
+  if (starting) return;
+  starting = true;
   closeModal();
+  await waitForVideo();
+  starting = false;
+
   game = new Game(undefined, onGameEvent);
   paused = false;
   hudKey = "";
+  countdownLeft = COUNTDOWN.length * COUNTDOWN_STEP_MS;
+  updateCountdown();
+  demo.stop();
   document.body.classList.add("in-game");
-  ui.menu.hidden = true;
+  ui.startScreen.hidden = true;
   ui.gameView.hidden = false;
   void ui.video.play().catch(() => {});
   input.reset();
@@ -160,6 +185,7 @@ function start(): void {
 }
 
 function backToMenu(): void {
+  closeModal(); // quitting from the pause menu must not leave it open
   game = null;
   paused = false;
   input.enabled = false;
@@ -167,8 +193,40 @@ function backToMenu(): void {
   ui.video.pause();
   document.body.classList.remove("in-game");
   ui.gameView.hidden = true;
-  ui.menu.hidden = false;
+  ui.startScreen.hidden = false;
   renderHighScores();
+  demo.start();
+}
+
+// The game starts over the background video, so give it a moment to be ready
+// instead of starting on a blank screen.
+async function waitForVideo(): Promise<void> {
+  const video = ui.video;
+  if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA || video.error) return;
+  const label = ui.play.textContent;
+  ui.play.textContent = "LOADING...";
+  ui.play.disabled = true;
+  video.preload = "auto";
+  await new Promise<void>((resolve) => {
+    const done = () => {
+      video.removeEventListener("canplay", done);
+      video.removeEventListener("error", done);
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(done, VIDEO_WAIT_MS);
+    video.addEventListener("canplay", done);
+    video.addEventListener("error", done);
+    video.load();
+  });
+  ui.play.textContent = label;
+  ui.play.disabled = false;
+}
+
+function updateCountdown(): void {
+  const step = COUNTDOWN.length - Math.ceil(countdownLeft / COUNTDOWN_STEP_MS);
+  const text = countdownLeft > 0 ? COUNTDOWN[step] : "";
+  if (ui.countdown.textContent !== text) ui.countdown.textContent = text;
 }
 
 async function gameOver(): Promise<void> {
@@ -202,11 +260,14 @@ function resume(): void {
 
 function renderHighScores(): void {
   ui.highscores.replaceChildren(
-    ...highScores.map((score) => {
+    ...highScores.map((score, i) => {
       const row = document.createElement("tr");
-      const cell = document.createElement("td");
-      cell.textContent = String(score);
-      row.append(cell);
+      const rank = document.createElement("td");
+      rank.className = "rank";
+      rank.textContent = RANKS[i] ?? "";
+      const value = document.createElement("td");
+      value.textContent = String(score);
+      row.append(rank, value);
       return row;
     }),
   );
@@ -222,6 +283,7 @@ function openModal(panel: string): void {
 
 function closeModal(): void {
   ui.modal.hidden = true;
+  controlsPanel.cancel();
 }
 
 // Closing the modal while paused (× or clicking outside) resumes the game.
@@ -269,7 +331,13 @@ function showText(text: string): void {
 // ---------------------------------------------------------------------------
 // Wiring
 
-$("play").addEventListener("click", start);
+const controlsPanel = new ControlsPanel($("controls-body"), controls, (updated) => {
+  controls = updated;
+  saveControls(controls);
+  input.setControls(controls);
+});
+
+ui.play.addEventListener("click", () => void start());
 $("controls").addEventListener("click", () => openModal("controls"));
 $("configuration").addEventListener("click", () => {
   fillConfigForm(settings);
@@ -280,7 +348,13 @@ ui.modal.addEventListener("click", (e) => {
   if (e.target === ui.modal) dismissModal();
 });
 $("resume").addEventListener("click", resume);
-$("restart").addEventListener("click", start);
+$("restart").addEventListener("click", () => void start());
+$("controls-reset").addEventListener("click", () => {
+  controls = cloneControls(DEFAULT_CONTROLS);
+  saveControls(controls);
+  input.setControls(controls);
+  controlsPanel.set(controls);
+});
 $("quit").addEventListener("click", backToMenu);
 $("cfg-reset").addEventListener("click", () => fillConfigForm(DEFAULT_SETTINGS));
 
@@ -290,10 +364,21 @@ ui.configForm.addEventListener("submit", (e) => {
   saveSettings(settings);
   setVolumes(settings.musicVolume, settings.sfxVolume);
   renderer.setColors(settings);
+  demo.setColors(settings);
   closeModal();
 });
 
-window.addEventListener("resize", () => renderer.resize());
+window.addEventListener("resize", () => {
+  renderer.resize();
+  demo.resize();
+});
+// Enter starts a game from the main menu.
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Enter" && !game && !starting && ui.modal.hidden && document.activeElement === document.body) {
+    e.preventDefault();
+    void start();
+  }
+});
 window.addEventListener("blur", pause);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) pause();
@@ -301,3 +386,21 @@ document.addEventListener("visibilitychange", () => {
 document.body.addEventListener("animationend", () => document.body.classList.remove("shake"));
 
 renderHighScores();
+
+demo.start();
+
+// Show the title and menu only once the background image is ready, so the
+// buttons don't appear over an empty screen first. Then start fetching the
+// in-game video so it is usually ready by the time the player presses PLAY.
+const wallpaper = new Image();
+wallpaper.src = `${import.meta.env.BASE_URL}images/wallpaper.webp`;
+let menuShown = false;
+const showMenu = () => {
+  if (menuShown) return;
+  menuShown = true;
+  document.body.classList.remove("loading");
+  ui.video.preload = "auto";
+  ui.video.load();
+};
+wallpaper.decode().then(showMenu, showMenu);
+setTimeout(showMenu, 3000); // don't hide the menu forever on a slow connection

@@ -1,26 +1,4 @@
-export type Action =
-  | "left"
-  | "right"
-  | "softDrop"
-  | "hardDrop"
-  | "rotateRight"
-  | "rotateLeft"
-  | "hold"
-  | "pause";
-
-export const KEY_BINDINGS: Readonly<Record<string, Action>> = {
-  ArrowLeft: "left",
-  ArrowRight: "right",
-  ArrowDown: "softDrop",
-  ArrowUp: "rotateRight",
-  KeyX: "rotateRight",
-  KeyZ: "rotateLeft",
-  Space: "hardDrop",
-  KeyC: "hold",
-  ShiftLeft: "hold",
-  Escape: "pause",
-  KeyP: "pause",
-};
+import { keyMap, type Action, type Controls } from "./controls";
 
 // Auto-repeat timings: wait DAS ms after the first move, then repeat every ARR ms.
 const DAS_MS = 170;
@@ -42,12 +20,19 @@ export class Input {
   private readonly onAction: (action: Action) => void;
   // Off while the menu is showing, so keys like Space keep working on buttons.
   enabled = false;
+  private bindings: Map<string, Action>;
 
-  constructor(onAction: (action: Action) => void) {
+  constructor(controls: Controls, onAction: (action: Action) => void) {
+    this.bindings = keyMap(controls);
     this.onAction = onAction;
     window.addEventListener("keydown", this.keyDown);
     window.addEventListener("keyup", this.keyUp);
     window.addEventListener("blur", this.reset);
+  }
+
+  setControls(controls: Controls): void {
+    this.bindings = keyMap(controls);
+    this.held.clear();
   }
 
   reset = (): void => {
@@ -66,7 +51,7 @@ export class Input {
   }
 
   private keyDown = (e: KeyboardEvent): void => {
-    const action = KEY_BINDINGS[e.code];
+    const action = this.bindings.get(e.code);
     if (!action || !this.enabled) return;
     e.preventDefault();
     if (e.repeat) return;
@@ -82,7 +67,7 @@ export class Input {
   };
 
   private keyUp = (e: KeyboardEvent): void => {
-    const action = KEY_BINDINGS[e.code];
+    const action = this.bindings.get(e.code);
     if (action === "left" || action === "right" || action === "softDrop") this.held.delete(action);
   };
 }

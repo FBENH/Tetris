@@ -11,7 +11,8 @@ A browser Tetris built with TypeScript and the Canvas API, bundled with Vite.
 - 7-bag randomizer: every group of seven pieces contains each tetromino once.
 - Lock delay (500 ms, up to 15 resets) to slide or rotate a piece after it lands.
 - Levels every 10 lines, guideline scoring (100 / 300 / 500 / 800 × level, plus soft and hard drop points).
-- Customizable board colors and volumes, saved in the browser along with the top 5 scores.
+- Customizable board colors, volumes and keys, saved in the browser along with the top 5 scores.
+- The main menu shows a demo game played by a simple AI in the background.
 
 ## Controls
 
@@ -24,6 +25,8 @@ A browser Tetris built with TypeScript and the Canvas API, bundled with Vite.
 | Rotate left | Z |
 | Hold | C or Shift |
 | Pause | Esc or P |
+
+All keys can be changed from **CONTROLS** in the main menu; the choice is saved in the browser.
 
 ![image](https://github.com/user-attachments/assets/c6f33e79-c724-4e26-870f-90471dd0aa76)
 

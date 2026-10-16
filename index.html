@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris</title>
+    <link rel="preload" href="/images/wallpaper.webp" as="image" type="image/webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap">
 </head>
-<body>
-    <h1 class="title" aria-label="Tetris">
-        <span class="letter">T </span>
-        <span class="letter">E </span>
-        <span class="letter">T </span>
-        <span class="letter">R </span>
-        <span class="letter">I </span>
-        <span class="letter">S </span>
-    </h1>
+<body class="loading">
+    <canvas id="demo-canvas" aria-hidden="true"></canvas>
 
     <span class="fade-text" id="fade-text" aria-live="polite"></span>
 
@@ -25,18 +19,12 @@
             <button type="button" class="close" id="modal-close" aria-label="Close">&times;</button>
 
             <section data-panel="controls" hidden>
-                <table>
-                    <tbody>
-                        <tr><td>MOVE LEFT</td><td><span class="control-key">←</span></td></tr>
-                        <tr><td>MOVE RIGHT</td><td><span class="control-key">→</span></td></tr>
-                        <tr><td>ROTATE RIGHT</td><td><span class="control-key">↑</span> / <span class="control-key">X</span></td></tr>
-                        <tr><td>ROTATE LEFT</td><td><span class="control-key">Z</span></td></tr>
-                        <tr><td>SOFT DROP</td><td><span class="control-key">↓</span></td></tr>
-                        <tr><td>HARD DROP</td><td><span class="control-key">Space</span></td></tr>
-                        <tr><td>HOLD PIECE</td><td><span class="control-key">C</span> / <span class="control-key">Shift</span></td></tr>
-                        <tr><td>PAUSE</td><td><span class="control-key">Esc</span> / <span class="control-key">P</span></td></tr>
-                    </tbody>
+                <h2>Controls</h2>
+                <table class="controls-table">
+                    <tbody id="controls-body"></tbody>
                 </table>
+                <p class="hint">Click a key and press the new one. Backspace clears a second key.</p>
+                <button type="button" id="controls-reset" class="menuButton">RESET</button>
             </section>
 
             <section data-panel="config" hidden>
@@ -75,17 +63,25 @@
         </div>
     </div>
 
-    <div class="menu" id="menu">
-        <button type="button" id="play" class="play menuButton">PLAY</button>
-        <button type="button" id="controls" class="menuButton">CONTROLS</button>
-        <button type="button" id="configuration" class="menuButton">CONFIGURATION</button>
-        <table id="score-table">
-            <thead>
-                <tr><th>HIGH SCORES</th></tr>
-            </thead>
-            <tbody id="highscores"></tbody>
-        </table>
-        <p class="touch-note">This game needs a keyboard.</p>
+    <div class="start-screen" id="start-screen">
+        <h1 class="title" aria-label="Tetris">
+            <span class="letter">T</span><span class="letter">E</span><span class="letter">T</span><span class="letter">R</span><span class="letter">I</span><span class="letter">S</span>
+        </h1>
+
+        <div class="menu" id="menu">
+            <button type="button" id="play" class="play menuButton">PLAY</button>
+            <button type="button" id="controls" class="menuButton">CONTROLS</button>
+            <button type="button" id="configuration" class="menuButton">CONFIGURATION</button>
+            <table id="score-table">
+                <thead>
+                    <tr><th colspan="2">HIGH SCORES</th></tr>
+                </thead>
+                <tbody id="highscores"></tbody>
+            </table>
+            <p class="touch-note">This game needs a keyboard.</p>
+        </div>
+
+        <p class="press-start">PRESS ENTER</p>
     </div>
 
     <div class="game-view" id="game-view" hidden>
@@ -98,6 +94,7 @@
         </div>
         <div class="game-canvas">
             <canvas id="board-canvas"></canvas>
+            <span class="countdown" id="countdown" aria-live="assertive"></span>
         </div>
         <div class="next-piece">
             <p>NEXT</p>
